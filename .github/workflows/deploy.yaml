@@ -14,7 +14,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Build Docker image
-              run: docker build react-app-test -f Dockerfile.dev .
+              run: docker build -t react-app-test -f Dockerfile.dev .
 
             - name: Run tests
               run: docker run react-app-test npm run test
