@@ -11,9 +11,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Login to DockerHub registry
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-
       - name: Build Docker image
         run: docker build -t bhayru01/react-app-test -f Dockerfile.dev .
 
