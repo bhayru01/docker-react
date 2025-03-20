@@ -1,21 +1,36 @@
-name: Docker Image CI
-
+name: Deploy Frontend
 on:
   push:
-    branches: ["master"]
-  pull_request:
-    branches: ["master"]
+    branches:
+      - master
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-            - name: Build Docker image
-              run: docker build -t react-app-test -f Dockerfile.dev .
+      - name: Login to DockerHub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
-            - name: Run tests
-              run: docker run -e CI=true react-app-test npm run test
+      - name: Build Docker image
+        run: docker build -t bhayru01/react-app-test -f Dockerfile.dev .
 
+      - name: Run tests
+        run: docker run -e CI=true bhayru01/react-app-test npm test
+
+      - name: Generate deployment package
+        run: zip -r deploy.zip . -x '*.git*'
+
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v18
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+          application_name: "frontend"
+          environment_name: "Frontend-env"
+          existing_bucket_name: "elasticbeanstalk-eu-north-1-418295721588"
+          region: "eu-north-1"
+          version_label: ${{ github.sha }}
+          deployment_package: deploy.zip
